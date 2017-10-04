@@ -17,16 +17,13 @@
  *
  */
 
-#ifndef __CMD_H__
-#define __CMD_H__
+#ifndef __VERSION_H__
+#define __VERSION_H__
 
-#include <Arduino.h>
-#include "struct.h"
-#include "ardupower.h"
-
-namespace cmd
-{
-  void process(const char* buffer);
-};
+// ----------------------------------------------------------------------------
+// Program info and version ---------------------------------------------------
+// ----------------------------------------------------------------------------
+#define ARDUPOWER_VERSION "0.1a"
+#define ARDUPOWER_VERSION_BUILD "20170908"
 
 #endif

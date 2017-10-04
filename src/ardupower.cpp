@@ -20,19 +20,16 @@
 // ----------------------------------------------------------------------------
 // Includes -------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-#include <Arduino.h>
-#include "serial.h"
 #include "ardupower.h"
-#include "relay.h"
 
 
 // ----------------------------------------------------------------------------
 // Global control structures --------------------------------------------------
 // ----------------------------------------------------------------------------
-output_t output[NUM_OF_CHANNELS] = {
+/*output_t output[NUM_OF_CHANNELS] = {
   CHANNEL01, CHANNEL02, CHANNEL03, CHANNEL04,
   CHANNEL05, CHANNEL06, CHANNEL07, CHANNEL08
-};
+};*/
 
 
 // ----------------------------------------------------------------------------
@@ -49,78 +46,19 @@ int main(void)
   // --------------------------------------------------------------------------
   // Serial port init routine -------------------------------------------------
   // --------------------------------------------------------------------------
-  #if SERIAL_BAUDRATE < 57600
-    const uint16_t UBRR0_value = ((F_CPU / (8L * SERIAL_BAUDRATE)) - 1) /2;
-    UCSR0A &= ~bit(U2X0); // baud doubler off
-  #else
-    const uint16_t UBRR0_value = ((F_CPU / (4L * SERIAL_BAUDRATE)) - 1) /2;
-    UCSR0A |= bit(U2X0);  // baud doubler on for high baud rates
-  #endif
-
-  // set baudrate
-  UBRR0H = UBRR0_value >> 8;
-  UBRR0L = UBRR0_value;
-
-  // enable rx and tx
-  UCSR0B |= bit(RXEN0);
-  UCSR0B |= bit(TXEN0);
-
-  // enable interrupt on complete reception of a byte
-  UCSR0B |= bit(RXCIE0);
-
-  // --------------------------------------------------------------------------
-  // Timer0 ISR init routine --------------------------------------------------
-  // --------------------------------------------------------------------------
-  // set waveform generation mode to Fast PWM
-  TCCR0A |= bit(WGM01) | bit(WGM00);
-
-  // set clock select to 64 (from prescaler)
-  TCCR0B |= bit(CS01) | bit(CS00);
-
-  // set overflow interrupt enable
-  TIMSK0 |= bit(TOIE0);
+  serial::setup();
 
 
   // --------------------------------------------------------------------------
-  // Timer1 ISR init routine --------------------------------------------------
+  // ISR timer init routine ---------------------------------------------------
   // --------------------------------------------------------------------------
-  // set output compare register A to 16 Hz
-  OCR1A = 0xF42;
-
-  // set waveform generation mode to CTC
-  TCCR1B |= bit(WGM12);
-
-  // set clock select to 256 (from prescaler)
-  TCCR1B |= bit(CS12);
-
-  // set output compare A match interrupt enable
-  TIMSK1 |= bit(OCIE1A);
-
-
-  // --------------------------------------------------------------------------
-  // Timer2 ISR init routine --------------------------------------------------
-  // --------------------------------------------------------------------------
-  // set waveform generation mode to PWM Phase Correct
-  TCCR2A |= bit(WGM20);
-
-  // set clock select to 64 (from prescaler)
-  TCCR2B |= bit(CS22);
+  timer::one::setup();
 
 
   // --------------------------------------------------------------------------
   // ADC init routine ---------------------------------------------------------
   // --------------------------------------------------------------------------
-  // set ADC prescaler select to 128
-  ADCSRA |= bit(ADPS2) | bit(ADPS1) | bit(ADPS0);
-
-  // set ADC Enable
-  ADCSRA |= bit(ADEN);
-
-  // set ADC multiplexer selection to external AREF
-  ADMUX = 0x00;
-
-  // set digital input disable register to A1-A5
-  DIDR0 |= bit(ADC5D) | bit(ADC4D) | bit(ADC3D) | bit(ADC2D) | bit(ADC1D);
+  adc::setup();
 
 
   // --------------------------------------------------------------------------
@@ -128,6 +66,10 @@ int main(void)
   // --------------------------------------------------------------------------
   sei();
 
+  serial::write('a');
+  serial::write('b');
+  //print::string("Welcome");
+  //print::eol();
 
   // --------------------------------------------------------------------------
   // Load settings ------------------------------------------------------------
@@ -141,13 +83,13 @@ int main(void)
   DDRB |= 0x20; // Enable D13 as output
                 // PORTB ^= 1 << 5;
 
-  for(uint8_t i = 0; i < NUM_OF_CHANNELS; i++) { relay::init(&output[i]); }
+  //for(uint8_t i = 0; i < NUM_OF_CHANNELS; i++) { relay::init(&output[i]); }
 
 
   // --------------------------------------------------------------------------
   // Startup ------------------------------------------------------------------
   // --------------------------------------------------------------------------
-  serial::banner();
+  //serial::banner();
 
 
   // --------------------------------------------------------------------------
@@ -155,7 +97,13 @@ int main(void)
   // --------------------------------------------------------------------------
   for(;;) {
     //wdt_reset();
-    serial::process();
+    //serial::process();
+
+    adc::update(0);
+
+    print::string("adc: ");
+    print::number( adc::get() );
+    print::eol();
   }
 
   // We should not reach this

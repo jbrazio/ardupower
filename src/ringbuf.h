@@ -1,5 +1,5 @@
 /**
- * Ardupower - Remote controlled DC power strip
+ * Circular Queue - Implementation of the classic ring buffer data structure
  * Copyright (C) 2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,12 @@
  *
  */
 
-#ifndef __CIRCULARQUEUE_H__
-#define __CIRCULARQUEUE_H__
+#ifndef __RINGBUF_H__
+#define __RINGBUF_H__
+
+#include <stdint.h>
+#include <avr/interrupt.h>
+#include "macro.h"
 
 /**
  * @brief   Circular Queue class
@@ -60,9 +64,13 @@ public:
    */
   bool enqueue(T const &item)
   {
-    if (full()) { return false; }
-    m_buffer.queue[m_buffer.tail] = item;
-    m_buffer.tail = (m_buffer.tail +1) % N;
+    if (full()) return false;
+
+    CRITICAL_SECTION_START
+      m_buffer.queue[m_buffer.tail] = item;
+      m_buffer.tail = (m_buffer.tail +1) % N;
+    CRITICAL_SECTION_END
+
     return true;
   }
 
@@ -104,9 +112,13 @@ public:
    */
   T dequeue()
   {
-    if (empty()) { return T(); }
-    const T item = m_buffer.queue[m_buffer.head];
-    m_buffer.head = (m_buffer.head +1) % N;
+    if (empty()) return T();
+
+    CRITICAL_SECTION_START
+      const T item = m_buffer.queue[m_buffer.head];
+      m_buffer.head = (m_buffer.head +1) % N;
+    CRITICAL_SECTION_END
+
     return item;
   }
 };

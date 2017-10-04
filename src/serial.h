@@ -17,22 +17,39 @@
  *
  */
 
-#ifndef __SERIAL_H__
-#define __SERIAL_H__
+#ifndef __HWSERIAL_H__
+#define __HWSERIAL_H__
 
-#include <Arduino.h>
-#include "struct.h"
+#include <stdint.h>
+#include <string.h>
+#include "ringbuf.h"
+#include "macro.h"
 
-namespace serial
+class serial
 {
-  bool    available();
-  void    banner();
-  uint8_t read();
-  void    flush();
-  void    process();
-  void    write(const uint8_t& c);
+  /**
+   * Disable the creation of an instance of this object.
+   * This class should be used as a static class.
+   */
+  private:
+    serial() {;}
 
-  extern serial_buffer_t buffer;
+  public:
+    // Being a bit lazy here, this buffer should be private to the class
+    // and have a set of wrappers around it.. adding it to the TODO list.
+    static struct buffer_t
+    {
+      ringbuf<uint8_t, 16u> rx;
+      ringbuf<uint8_t, 8u> tx;
+    } buffer;
+
+  public:
+    static bool available();
+    static char read();
+    static void flush();
+    static void process();
+    static void setup();
+    static void write(const char&);
 };
 
 #endif

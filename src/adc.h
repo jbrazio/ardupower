@@ -17,16 +17,34 @@
  *
  */
 
-#ifndef __RELAY_H__
-#define __RELAY_H__
+#include <stdint.h>
+#include <avr/interrupt.h>
+#include "macro.h"
 
-#include <Arduino.h>
-#include "struct.h"
+#define ADC_READY         bit(0)  // bitmask 00000001
+#define ADC_REQ_READING   bit(1)  // bitmask 00000010
+#define ADC_REQ_READY     bit(2)  // bitmask 00000100
 
-namespace relay
+class adc
 {
-  void init(output_t *output);
-  void power(output_t *output, output_state_t state);
-};
+  /**
+   * Disable the creation of an instance of this object.
+   * This class should be used as a static class.
+   */
+  private:
+    adc() {;}
 
-#endif
+  protected:
+    static volatile struct adc_t
+    {
+      uint8_t state,
+              channel;
+      int16_t value;
+    } runtime;
+
+  public:
+    static bool setup();
+    static bool update(const uint8_t&);
+    static int16_t get();
+    static void set();
+};

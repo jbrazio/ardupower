@@ -17,15 +17,32 @@
  *
  */
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
 
-#include <Arduino.h>
-#include "struct.h"
+#ifndef bit
+  #define bit(b) (1UL << (b))
+#endif
 
-// ----------------------------------------------------------------------------
-// Global objects -------------------------------------------------------------
-// ----------------------------------------------------------------------------
-output_t output[NUM_OF_CHANNELS];
+#ifndef cbi
+  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
 
+#ifndef sbi
+  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
+
+#ifndef min
+  #define min(a,b) ((a)<(b)?(a):(b))
+#endif
+
+#ifndef max
+  #define max(a,b) ((a)>(b)?(a):(b))
+#endif
+
+#ifndef abs
+  #define abs(x) ((x)>0?(x):-(x))
+#endif
+
+#ifndef CRITICAL_SECTION_START
+  #define CRITICAL_SECTION_START  const uint8_t SREG_cache = SREG; cli();
+  #define CRITICAL_SECTION_END    SREG = SREG_cache;
 #endif

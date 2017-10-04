@@ -17,16 +17,36 @@
  *
  */
 
-#ifndef __STRINGS_H__
-#define __STRINGS_H__
+#include <avr/interrupt.h>
+#include "macro.h"
 
-// Special characters
-const char string_colon   [] PROGMEM = { 0x3a, 0x00 };
-const char string_comma   [] PROGMEM = { 0x2c, 0x00 };
-const char string_eol     [] PROGMEM = { 0x0a, 0x00 };
-const char string_minus   [] PROGMEM = { 0x2d, 0x00 };
-const char string_percent [] PROGMEM = { 0x25, 0x00 };
-const char string_space   [] PROGMEM = { 0x20, 0x00 };
-const char string_zero    [] PROGMEM = { 0x30, 0x00 };
+namespace timer
+{
+  namespace one
+  {
+    /**
+     * @brief Timer one setup
+     * @details Timer 1 is used as the main thread heartbeat
+     */
+    inline void setup() {
+      CRITICAL_SECTION_START
+        // set output compare register A to 16 Hz
+        OCR1A = 0xF42;
 
-#endif
+        // set waveform generation mode to CTC
+        TCCR1B |= bit(WGM12);
+
+        // set clock select to 256 (from prescaler)
+        TCCR1B |= bit(CS12);
+
+        // set output compare A match interrupt enable
+        TIMSK1 |= bit(OCIE1A);
+      CRITICAL_SECTION_END
+    }
+  }
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+  ;;
+}
